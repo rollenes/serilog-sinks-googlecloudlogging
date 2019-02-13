@@ -64,6 +64,12 @@ namespace Serilog.Sinks.GoogleCloudLogging
                     Timestamp = Timestamp.FromDateTimeOffset(e.Timestamp)
                 };
 
+                if (e.Properties.TryGetValue("googleTrace", out var googleTraceProperty))
+                {
+                    entry.Trace = googleTraceProperty.ToString();
+                    e.RemovePropertyIfPresent("googleTrace");
+                }
+
                 if (_sinkOptions.UseJsonOutput)
                 {
                     var jsonStruct = new Struct();
@@ -74,19 +80,20 @@ namespace Serilog.Sinks.GoogleCloudLogging
 
                     foreach (var property in e.Properties)
                         WritePropertyAsJson(entry, propertiesStruct, property.Key, property.Value);
-
+                    
                     entry.JsonPayload = jsonStruct;
                 }
                 else
                 {
                     entry.TextPayload = RenderEventMessage(e);
-
+                    
                     foreach (var property in e.Properties)
                         WritePropertyAsLabel(entry, property.Key, property.Value);
                 }
 
                 logEntries.Add(entry);
             }
+
 
             await _client.WriteLogEntriesAsync(_logNameToWrite, _resource, _sinkOptions.Labels, logEntries);
         }
