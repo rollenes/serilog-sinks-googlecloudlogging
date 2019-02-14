@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Google.Cloud.Diagnostics.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -10,13 +11,16 @@ namespace TestWeb
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IManagedTracer _managedTracer;
 
-        public HomeController(ILogger<HomeController> logger, ILoggerFactory loggerFactory)
+        public HomeController(ILogger<HomeController> logger, ILoggerFactory loggerFactory, IManagedTracer managedTracer)
         {
             _logger = logger;
             _loggerFactory = loggerFactory;
+            _managedTracer = managedTracer;
         }
 
+        [HttpGet("test-trace")]
         public IActionResult Index()
         {
             Log.Information("Test info message with serilog");
@@ -48,7 +52,7 @@ namespace TestWeb
 
             // create link to GCP log viewer
             var url = $"https://console.cloud.google.com/logs/viewer";
-            var page = $"<html><body>Logged messages, visit GCP log viewer at <a href='{url}'>{url}</a></body></html>";
+            var page = $"<html><body>Logged messages, visit GCP log viewer at <a href='{url}'>{url}</a> Trace: {_managedTracer.GetCurrentTraceId()}</body></html>";
             return Content(page, "text/html");
         }
     }

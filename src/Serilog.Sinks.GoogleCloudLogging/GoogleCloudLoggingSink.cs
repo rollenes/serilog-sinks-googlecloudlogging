@@ -66,7 +66,7 @@ namespace Serilog.Sinks.GoogleCloudLogging
 
                 if (e.Properties.TryGetValue("googleTrace", out var googleTraceProperty))
                 {
-                    entry.Trace = googleTraceProperty.ToString();
+                    entry.Trace = $"projects/google-project-id/traces/{googleTraceProperty.ToString().Replace("\"", "")}";
                     e.RemovePropertyIfPresent("googleTrace");
                 }
 

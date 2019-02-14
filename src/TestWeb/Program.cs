@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.GoogleCloudLogging;
+using Google.Cloud.Diagnostics.AspNetCore;
 
 namespace TestWeb
 {
@@ -53,10 +54,17 @@ namespace TestWeb
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .ConfigureServices(services => services.AddMvc())
+                .ConfigureServices(services => services
+                    .AddGoogleTrace(options => {
+                        options.ProjectId = "google-project-id";
+                        })
+                    .AddMvc()
+                )
                 .Configure(app =>
                 {
                     app.UseDeveloperExceptionPage();
+                    app.UseGoogleTrace();
+                    app.UseGoogleTraceIdInSerilog();
                     app.UseMvcWithDefaultRoute();
                 })
                 .UseSerilog() // Add this to send all built-in logging to Serilog
